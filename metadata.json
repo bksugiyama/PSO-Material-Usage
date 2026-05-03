@@ -1,0 +1,6 @@
+{
+  "name": "PSO Material Tracker",
+  "description": "A minimalist material tracker for Phantasy Star Online (Ver. 3) with local storage persistence and backup features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
