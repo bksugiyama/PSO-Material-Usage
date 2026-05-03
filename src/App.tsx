@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Upload, Plus, Trash2, Edit2, ShieldAlert } from 'lucide-react';
+import { Download, Upload, Plus, Trash2, Edit2, ShieldAlert, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, Character, ClassType, CharacterStats, MAIN_STATS, SPECIAL_STATS } from './types';
 
@@ -24,6 +24,7 @@ function getClassCap(classType: ClassType): number {
 }
 
 export default function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem('pso-material-tracker');
     if (saved) {
@@ -140,12 +141,41 @@ export default function App() {
   const mainStatsCap = activeChar ? getClassCap(activeChar.classType) : 0;
   
   return (
-    <div className="min-h-screen bg-[#fafafa] flex font-sans text-gray-900 selection:bg-gray-200">
+    <div className="h-screen overflow-hidden bg-[#fafafa] flex font-sans text-gray-900 selection:bg-gray-200 relative">
+      
+      {/* Mobile Header */}
+      <div className="md:hidden absolute top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-20">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">PSO Tracker</h1>
+        </div>
+        <button onClick={() => setIsSidebarOpen(true)} className="p-2 -mr-2 text-gray-600 hover:text-gray-900">
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* Sidebar Overlay (Mobile) */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/20 z-30 md:hidden" 
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="w-72 border-r border-gray-200 bg-white flex flex-col h-screen sticky top-0 shrink-0">
-        <div className="p-6 border-b border-gray-100 flex-none">
-          <h1 className="text-xl font-semibold tracking-tight">PSO Tracker</h1>
-          <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-medium">Material Management</p>
+      <aside className={`fixed md:sticky top-0 left-0 h-screen w-72 bg-white border-r border-gray-200 z-40 flex flex-col transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} shrink-0`}>
+        <div className="p-6 border-b border-gray-100 flex-none flex justify-between items-start">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">PSO Tracker</h1>
+            <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-medium">Material Management</p>
+          </div>
+          <button className="md:hidden p-2 text-gray-400 hover:text-gray-900 -mr-2 -mt-2" onClick={() => setIsSidebarOpen(false)}>
+            <X size={20} />
+          </button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -159,7 +189,10 @@ export default function App() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  onClick={() => setState(s => ({ ...s, activeCharId: char.id }))}
+                  onClick={() => {
+                    setState(s => ({ ...s, activeCharId: char.id }));
+                    setIsSidebarOpen(false);
+                  }}
                   className={`group relative p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
                     state.activeCharId === char.id 
                       ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
@@ -231,7 +264,7 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 pt-16 md:pt-0">
         {!activeChar ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
